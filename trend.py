@@ -5,7 +5,7 @@
 # December 2016
 #
 #  
-# use: trend.py input.nc output.nc linear|sen|quantreg slope|pval
+# use: trend.py input.nc output.nc linear|TheilSen|quantreg slope|pval
 #
 # returns output.nc of the same lat lon dimensions as input.nc
 # input.nc has to have one 3D variable with dimensions: lat,lon,time (not necessarily in this sequence)
@@ -66,8 +66,10 @@ def get_linear(_y, what="slope"):
         return np.nan
 
 def get_quantreg(_y, what="slope", q=0.5):
-    if not np.ma.is_masked(_y):    
+    if not np.ma.is_masked(_y):
+      try: 
         _x = sm.add_constant(np.arange(len(_y)))
+#        print np.isnan(_y).any()
         res=QuantReg(_y, _x).fit(q=0.5)
         if what=="slope":
             return res.params[1]
@@ -75,6 +77,9 @@ def get_quantreg(_y, what="slope", q=0.5):
             return res.pvalues[1]
         elif what=="intercept":
             return res.params[0]
+      except:
+        print "tenporary setback"
+        return np.nan
     else:
         return np.nan
 
@@ -119,9 +124,9 @@ data=np.moveaxis(data0,(timeindx,latindx,lonindx), (0,1,2))
 if trend=="linear":
     res=np.ma.apply_along_axis(get_linear, 0, data, what=what)
 elif trend=="TheilSen":
-    res_sen=np.ma.apply_along_axis(get_TheilSen, 0, data, what=what)
-elif trend=="quantile":
-    res_quant=np.ma.apply_along_axis(get_quantreg, 0, data, what=what)
+    res=np.ma.apply_along_axis(get_TheilSen, 0, data, what=what)
+elif trend=="quantreg":
+    res=np.ma.apply_along_axis(get_quantreg, 0, data, what=what)
 else:
     print "unknown trend type: "+ trend
     print "exiting..."

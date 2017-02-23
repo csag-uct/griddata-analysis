@@ -83,6 +83,7 @@ def rainy_season_pars(ts, p1,p2,what):
 
 # this reads a netCDF file with three dimensions: lon, lat and time, containing one variable
 # onset is calculated on the entire scene, save the areas that have NaNs
+print infile
 ncdata=Dataset(infile, "r", format='NETCDF4')
 #finding variable name
 found=False
